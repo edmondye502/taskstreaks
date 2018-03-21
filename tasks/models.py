@@ -1,8 +1,14 @@
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
-
+@python_2_unicode_compatible  # only if you need to support Python 2
 class Tasks(models.Model):
     tasks_text = models.CharField(max_length = 200)
-    completed = models.BooleanField(default = 'false')
-    create_date = models.DateTimeField()
+    completed = models.BooleanField(default = False)
+    create_date = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.tasks_text
+
+    def is_completed(self):
+    	return self.completed
