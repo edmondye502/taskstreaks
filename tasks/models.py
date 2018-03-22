@@ -13,6 +13,7 @@ class Task(models.Model):
 	task_text = models.CharField(max_length = 200)
 	task_type = models.CharField(max_length = 10, choices = TASK_TYPES, default = DAILY)
 	completed = models.BooleanField(default = False)
+	delete_flag = models.BooleanField(default = False)
 	create_date = models.DateTimeField(default=now)
 
 	def __str__(self):

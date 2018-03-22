@@ -1,0 +1,70 @@
+{% extends "tasks/base.html" %}
+
+{% block content %}
+
+{% block javascript %}
+  <script>
+	$(document).on('change', '.tasks', function() {
+		var task_id = $(this).val();
+
+		$.ajax({
+	        url: "{% url 'tasks:complete' %}",
+	        type: 'POST',
+	        data: {
+	        	'task_id': task_id,
+	        	'csrfmiddlewaretoken': '{{ csrf_token }}',
+	        },
+	        success: function (data) { },
+	        failure: function(data) { }
+      	});
+    });
+
+    $(document).on('click', '#add_task', function() {
+    	$('#add_task').remove();
+    	$('#task_list').append("<div id='new_task'><input type='checkbox' id='new_task_completion'/><input type='text' id='new_task_text'/><button type='button' id='confirm_add'>Add</button><button type='button' id='cancel_add'>X</button></div>"); 
+    });
+
+    $(document).on('click', '#confirm_add', function() {
+    	var new_task_text = $('#new_task_text').val();
+		var new_task_completion = $('#new_task_completion').is(':checked');
+
+		$.ajax({
+	        url: "{% url 'tasks:addTask' %}",
+	        type: 'POST',
+	        data: {
+	        	'new_task_text': new_task_text,
+	        	'new_task_completion' : new_task_completion,
+	        	'csrfmiddlewaretoken': '{{ csrf_token }}',
+	        },
+	        success: function (data) { location.reload(); console.log('yes')},
+	        failure: function(data) { console.log('no') }
+      	});
+    });
+
+    $(document).on('click', '#cancel_add', function() {
+    	$('#new_task').remove();
+    	$('#add_button_div').append("<button type='button' id='add_task'>Add Task</button>"); 
+    });
+  </script>
+{% endblock %}
+
+
+
+
+{% if task_list %}
+	<form id="task_list">
+	{% for task in task_list %}
+	    <input type="checkbox" class="tasks" name="tasks[]" value="{{ task.id }}" {% if task.completed %} checked=checked {% endif %}/>
+	    <label for="task{{ forloop.counter }}"><a href="{% url 'tasks:detail' task.id %}">{{ task.task_text }}</a></label><br />
+	{% endfor %}
+	</form>
+{% else %}
+    <p>You have no tasks.</p>
+{% endif %}
+
+<!-- Add task form/button -->
+<div id="add_button_div">
+<button type="button" id="add_task">Add Task</button> 
+</div>
+
+{% endblock %}

@@ -1,39 +1,66 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views import generic
 
 from .models import Task
 
-def index(request):
-	task_list = Task.objects.order_by('create_date')[:5]
-	context = {
-		'task_list': task_list,
-	}
-	return render(request, 'tasks/index.html', context)
+class IndexView(generic.ListView):
+    template_name = 'tasks/index.html'
+    context_object_name = 'task_list'
 
+    def get_queryset(self):
+        return Task.objects.filter(delete_flag=False).order_by('create_date')
 
+class DetailView(generic.DetailView):
+    model = Task
+    template_name = 'tasks/detail.html'
 
-def detail(request, task_id):
-	task = get_object_or_404(Task, pk=task_id)
-	return render(request, 'tasks/detail.html', {'task': task})
+    def get_queryset(self):
+        return Task.objects.filter(delete_flag=False)
 
 def complete(request):
 	try:
-		selected_tasks = request.POST.getlist('tasks[]')
-		completed_tasks = []
-		for task_id in selected_tasks:
-			completed_tasks.append(Task.objects.get(pk = task_id))
+		task_id = request.POST['task_id']
+		task = Task.objects.get(pk = task_id)
 	except (KeyError, Task.DoesNotExist):
-		# Redisplay the question voting form.
-		return render(request, 'tasks/index.html', {
-			'task_list': Task.objects.order_by('create_date')[:5],
-			'error_message': "Error updating tasks. Please try again.",
-		})
+		return JsonResponse({'status':'Fail'})
 	else:
-		for ct in completed_tasks:
-			ct.completed =  True
-			ct.save()
-		# Always return an HttpResponseRedirect after successfully dealing
-		# with POST data. This prevents data from being posted twice if a
-		# user hits the Back button.
-		return HttpResponseRedirect(reverse('tasks:index'))
+		task.completed = False if task.completed else True
+		task.save()
+		return JsonResponse({'status':'Success'})
+
+def addTask(request):
+	try:
+		task_text = request.POST['new_task_text']
+		task_completed = True if request.POST['new_task_completion'] == 'true' else False
+
+		task = Task(task_text=task_text, completed=task_completed)
+		task.save()
+
+		return JsonResponse({'status':'Success'})
+	except:
+		return JsonResponse({'status':'Fail'})
+
+def editTask(request):
+	try:
+		task_id = request.POST['task_id']
+		edit_task_text = request.POST['task_text']
+		task = Task.objects.get(pk = task_id)
+	except (KeyError, Task.DoesNotExist):
+		return JsonResponse({'status':'Fail'})
+	else:
+		task.task_text = edit_task_text
+		task.save()
+		return JsonResponse({'status':'Success'})
+
+def deleteTask(request):
+	try:
+		task_id = request.POST['task_id']
+		task = Task.objects.get(pk = task_id)
+	except (KeyError, Task.DoesNotExist):
+		return JsonResponse({'status':'Fail'})
+	else:
+		task.delete_flag = True
+		task.save()
+		return JsonResponse({'status':'Success'})
