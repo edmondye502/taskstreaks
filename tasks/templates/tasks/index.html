@@ -21,7 +21,7 @@
 
 	$(document).on('click', '#add_task', function() {
 		$('#add_task').remove();
-		$('#task_list').append("<div id='new_task'><input type='checkbox' id='new_task_completion'/><input type='text' id='new_task_text'/><button type='button' id='confirm_add'>Add</button><button type='button' id='cancel_add'>X</button></div>"); 
+		$('#task_list').append("<li id='new_task'><input type='checkbox' id='new_task_completion'/><input type='text' id='new_task_text' size='15'/><button type='button' id='confirm_add'>Add</button><button type='button' id='cancel_add'>X</button></li>"); 
 	});
 
 	$(document).on('click', '#confirm_add', function() {
@@ -33,7 +33,8 @@
 			type: 'POST',
 			data: {
 				'new_task_text': new_task_text,
-				'new_task_completion' : new_task_completion,
+				'new_task_completion': new_task_completion,
+				'task_type': '{{ page_type }}',
 				'csrfmiddlewaretoken': '{{ csrf_token }}',
 			},
 			success: function (data) { location.reload(); console.log('yes')},
@@ -45,6 +46,7 @@
 		$('#new_task').remove();
 		$('#add_button_div').append("<button type='button' class='btn btn-primary pull-left' id='add_task'><i class='fa fa-plus'></i> Add Task</button>"); 
 	});
+
   </script>
 {% endblock %}
 
@@ -54,15 +56,15 @@
 
   		<!-- Paging -->
       	<div class="box-header ui-sortable-handle">
-        	<h3 class="box-title">Daily</h3>
+        	<h3 class="box-title">{{ page_type }}</h3>
         	<div class="box-tools pull-right">
 	          	<nav aria-label="...">
 				  <ul class="pagination">
 			
-				    <li class="page-item"><a class="page-link" href="#">O</a></li>
-				    <li class="page-item active"><span class="page-link">D<span class="sr-only">(current)</span></span></li>
-				    <li class="page-item"><a class="page-link" href="#">M</a></li>
-				    <li class="page-item"><a class="page-link" href="#">Y</a></li>
+				    <li class="page-item {% if page_type == 'Once' %}active{% endif %}"><a class="page-link" href="/tasks/once">O</a></li>
+				    <li class="page-item {% if page_type == 'Daily' %}active{% endif %}"><a class="page-link" href="/tasks/day">D</a></li>
+				    <li class="page-item {% if page_type == 'Monthly' %}active{% endif %}"><a class="page-link" href="/tasks/month">M</a></li>
+				    <li class="page-item {% if page_type == 'Yearly' %}active{% endif %}"><a class="page-link" href="/tasks/year">Y</a></li>
 				  </ul>
 				</nav>
         	</div>
@@ -70,8 +72,8 @@
  		
  		<!-- To do list body -->
       	<div class="box-body">
-	      	{% if task_list %}
 	        <ul class="todo-list ui-sortable" id="task_list">
+	        	{% if task_list %}
 	        	{% for task in task_list %}
 	          	<li>
 		            <input type="checkbox" class="tasks" name="tasks[]" value="{{ task.id }}" {% if task.completed %} checked=checked {% endif %}/>
@@ -82,13 +84,13 @@
 		            </div>
 	          	</li>
 	         	{% endfor %}
+	         	{% endif %}
 	        </ul>
-	        {% endif %}
       	</div>
     	
     	<!-- Add new task button -->
-    	<div class="box-footer" id="add_button_div">
-      		<button type="button" class="btn btn-primary pull-left" id="add_task"><i class="fa fa-plus"></i> Add Task</button>
+    	<div class="box-body" id="add_button_div">
+      		<button class="btn btn-primary pull-left" id="add_task" href="#" ><i class="fa fa-plus"></i> Add Task</button>
       	</div>
   	
   	</div> 

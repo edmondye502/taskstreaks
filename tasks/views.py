@@ -6,18 +6,30 @@ from django.views import generic
 from .models import Task
 
 class IndexView(generic.ListView):
-    template_name = 'tasks/index.html'
-    context_object_name = 'task_list'
+	template_name = 'tasks/index.html'
+	context_object_name = 'task_list'
 
-    def get_queryset(self):
-        return Task.objects.filter(delete_flag=False).order_by('create_date')
+	def getTaskType(self):
+		page_types = {'day': 'Daily', 'month': 'Monthly', 'year': 'Yearly', 'once': 'Once'}
+		task_type = page_types[self.kwargs['task_type']] if page_types[self.kwargs['task_type']] else 'Daily'
+		return task_type
+	
+	def get_context_data(self, **kwargs):
+	    context = super().get_context_data(**kwargs)	    
+	    context['page_type'] = self.getTaskType()
+	    return context
+
+	def get_queryset(self):
+		task_type = self.getTaskType()
+		return Task.objects.filter(task_type=task_type, delete_flag=False).order_by('create_date')
+
 
 class DetailView(generic.DetailView):
-    model = Task
-    template_name = 'tasks/detail.html'
+	model = Task
+	template_name = 'tasks/detail.html'
 
-    def get_queryset(self):
-        return Task.objects.filter(delete_flag=False)
+	def get_queryset(self):
+		return Task.objects.filter(delete_flag=False)
 
 def complete(request):
 	try:
@@ -35,7 +47,10 @@ def addTask(request):
 		task_text = request.POST['new_task_text']
 		task_completed = True if request.POST['new_task_completion'] == 'true' else False
 
-		task = Task(task_text=task_text, completed=task_completed)
+		task_choices = {'Daily': Task.DAILY, 'Monthly': Task.MONTHLY, 'Yearly': Task.YEARLY, 'Once': Task.ONCE}
+		task_type = task_choices[request.POST['task_type']] if task_choices[request.POST['task_type']] else Task.ONCE
+		
+		task = Task(task_text=task_text, completed=task_completed, task_type=task_type)
 		task.save()
 
 		return JsonResponse({'status':'Success'})
@@ -64,3 +79,4 @@ def deleteTask(request):
 		task.delete_flag = True
 		task.save()
 		return JsonResponse({'status':'Success'})
+
