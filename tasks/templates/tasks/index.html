@@ -21,30 +21,17 @@
 
 	$(document).on('click', '#add_task', function() {
 		$('#add_task').remove();
-		$('#task_list').append("<li id='new_task'><input type='checkbox' id='new_task_completion'/><input type='text' id='new_task_text' size='15'/><button type='button' id='confirm_add'>Add</button><button type='button' id='cancel_add'>X</button></li>"); 
+		$('#task_list').append("<li id='new_task'><form action=\'{% url 'tasks:addTask' %}\' method='POST'>{% csrf_token %}<input type='hidden' name='task_type' value='{{ page_type }}'/><input type='checkbox' name='new_task_completion'/><input type='text' name='new_task_text' size='15'/><button type='submit'>Add</button><button type='button' id='cancel_add'>X</button></form></li>"); 
 	});
 
-	$(document).on('click', '#confirm_add', function() {
-		var new_task_text = $('#new_task_text').val();
-		var new_task_completion = $('#new_task_completion').is(':checked');
-
-		$.ajax({
-			url: "{% url 'tasks:addTask' %}",
-			type: 'POST',
-			data: {
-				'new_task_text': new_task_text,
-				'new_task_completion': new_task_completion,
-				'task_type': '{{ page_type }}',
-				'csrfmiddlewaretoken': '{{ csrf_token }}',
-			},
-			success: function (data) { location.reload(); console.log('yes')},
-			failure: function(data) { console.log('no') }
-		});
-	});
 
 	$(document).on('click', '#cancel_add', function() {
 		$('#new_task').remove();
 		$('#add_button_div').append("<button type='button' class='btn btn-primary pull-left' id='add_task'><i class='fa fa-plus'></i> Add Task</button>"); 
+	});
+
+	$(document).on('click', '#delete', function() {
+		$(this).closest('form').submit();
 	});
 
   </script>
@@ -80,7 +67,7 @@
 		            <span class="text"><a href="{% url 'tasks:detail' task.id %}">{{ task.task_text }}</a></span>
 		            <div class="tools">
 		              	<i class="fa fa-edit"></i>
-		              	<i class="fa fa-trash-o"></i>
+		              	<form id="delete_task_form" method="POST" action="{% url 'tasks:deleteTask' %}">{% csrf_token %}<input type="hidden" name="task_id" value="{{ task.id }}"><i class="fa fa-trash-o" id='delete' type='submit'></i></form>
 		            </div>
 	          	</li>
 	         	{% endfor %}

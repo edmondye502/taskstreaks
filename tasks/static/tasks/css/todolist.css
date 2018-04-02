@@ -93,3 +93,14 @@ body{
     border: 1px solid transparent;
     cursor: pointer;
 }
+
+.fa-trash-o {
+    cursor: pointer;
+}
+.fa-edit {
+    cursor: pointer;
+}
+
+.tools {
+    display: inline-block;
+}

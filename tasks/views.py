@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views import generic
 
@@ -11,7 +11,7 @@ class IndexView(generic.ListView):
 
 	def getTaskType(self):
 		page_types = {'day': 'Daily', 'month': 'Monthly', 'year': 'Yearly', 'once': 'Once'}
-		task_type = page_types[self.kwargs['task_type']] if page_types[self.kwargs['task_type']] else 'Daily'
+		task_type = page_types[self.kwargs['task_type']] if 'task_type' in self.kwargs and self.kwargs['task_type'] in page_types else 'Daily'
 		return task_type
 	
 	def get_context_data(self, **kwargs):
@@ -44,18 +44,18 @@ def complete(request):
 
 def addTask(request):
 	try:
-		task_text = request.POST['new_task_text']
-		task_completed = True if request.POST['new_task_completion'] == 'true' else False
+		task_text = request.POST.get('new_task_text')
+		task_completed = True if request.POST.get('new_task_completion') else False
 
 		task_choices = {'Daily': Task.DAILY, 'Monthly': Task.MONTHLY, 'Yearly': Task.YEARLY, 'Once': Task.ONCE}
-		task_type = task_choices[request.POST['task_type']] if task_choices[request.POST['task_type']] else Task.ONCE
+		task_type = task_choices[request.POST.get('task_type')] if task_choices[request.POST.get('task_type')] else Task.ONCE
 		
 		task = Task(task_text=task_text, completed=task_completed, task_type=task_type)
 		task.save()
 
-		return JsonResponse({'status':'Success'})
-	except:
-		return JsonResponse({'status':'Fail'})
+		return redirect('tasks:index')
+	except Exception as e:
+		return JsonResponse({'status':e})
 
 def editTask(request):
 	try:
@@ -71,12 +71,12 @@ def editTask(request):
 
 def deleteTask(request):
 	try:
-		task_id = request.POST['task_id']
+		#verify it is logged in users task
+		task_id = request.POST.get('task_id')
 		task = Task.objects.get(pk = task_id)
-	except (KeyError, Task.DoesNotExist):
-		return JsonResponse({'status':'Fail'})
+	except Exception as e:
+		return JsonResponse({'status':e})
 	else:
 		task.delete_flag = True
 		task.save()
-		return JsonResponse({'status':'Success'})
-
+		return redirect('tasks:index')
