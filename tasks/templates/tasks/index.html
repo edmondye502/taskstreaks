@@ -4,6 +4,10 @@
 
 {% block javascript %}
   <script>
+  	$(function() {
+        $("#task_list").sortable();
+    });
+
 	$(document).on('change', '.tasks', function() {
 		var task_id = $(this).val();
 
