@@ -34,6 +34,31 @@
 		$(this).closest('form').submit();
 	});
 
+	$(document).on('click', '#confirm_edit', function() {
+		$(this).closest('form').submit();
+	});
+
+
+	$(document).on('click', '#edit', function() {
+		var parent_li = $(this).closest('li');
+		var old_task_text = parent_li.find('span#task_text').text().trim();
+		parent_li.find('span#task_text').hide();
+		parent_li.find('div.tools').empty();
+
+		parent_li.append("<form id='edit_task_form' method='POST' action=\'{% url 'tasks:editTask' %}\'>{% csrf_token %}<input type='hidden' name='task_id' value="+parent_li.find('input.tasks').val()+"><input type='text' id='edit_task_text' name='task_text' value='"+old_task_text+"'><div class='edit_tools'><i class='fa fa-check' id='confirm_edit'></i><i class='fa fa-times' id='cancel_edit'></i></div></form>")
+		
+	});
+
+	$(document).on('click', '#cancel_edit', function() {
+		var parent_li = $(this).closest('li');
+		parent_li.find('span#task_text').show();
+		$('#edit_task_text').remove();
+		$('.edit_tools').empty();
+		
+		parent_li.append("<div class='tools'><i class='fa fa-edit' id='edit'></i><form id='delete_task_form' method='POST' action=\'{% url 'tasks:deleteTask' %}\'>{% csrf_token %}<input type='hidden' name='task_id' value='"+parent_li.find('input.tasks').val()+"'><i class='fa fa-trash-o' id='delete' type='submit'></i></form></div>")
+
+	});
+
   </script>
 {% endblock %}
 
@@ -64,9 +89,13 @@
 	        	{% for task in task_list %}
 	          	<li>
 		            <input type="checkbox" class="tasks" name="tasks[]" value="{{ task.id }}" {% if task.completed %} checked=checked {% endif %}/>
-		            <span class="text"><a href="{% url 'tasks:detail' task.id %}">{{ task.task_text }}</a></span>
+		            <span id="task_text">
+		            	<!-- <a href="{% url 'tasks:detail' task.id %}"> -->
+		            	{{ task.task_text }}
+		            	<!-- </a> -->
+		            </span>
 		            <div class="tools">
-		              	<i class="fa fa-edit"></i>
+		              	<i class="fa fa-edit" id="edit"></i>
 		              	<form id="delete_task_form" method="POST" action="{% url 'tasks:deleteTask' %}">{% csrf_token %}<input type="hidden" name="task_id" value="{{ task.id }}"><i class="fa fa-trash-o" id='delete' type='submit'></i></form>
 		            </div>
 	          	</li>

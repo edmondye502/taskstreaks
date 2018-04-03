@@ -68,11 +68,14 @@ body{
 .todo-list>li .label {
     margin-left: 10px;
     font-size: 9px;
+
+}
+.todo-list>li .edit_tools {
+    float: right;
 }
 .todo-list>li .tools {
     display: none;
     float: right;
-    color: #dd4b39;
 }
 .todo-list>li:hover .tools{
     display: block;  
@@ -94,13 +97,27 @@ body{
     cursor: pointer;
 }
 
-.fa-trash-o {
-    cursor: pointer;
-}
-.fa-edit {
+.fa {
     cursor: pointer;
 }
 
-.tools {
-    display: inline-block;
+.fa-trash-o {
+    color: #dd4b39;
+    padding-left: 5px;
+
+}
+.fa-edit {
+    color: #000;
+}
+.fa-check {
+    color: #0c0;
+}
+.fa-times {
+    color: #dd4b39;
+    padding-left: 10px;
+
+}
+
+#delete_task_form, #edit_task_form {
+    display: inline;
 }

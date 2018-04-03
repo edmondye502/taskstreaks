@@ -59,15 +59,18 @@ def addTask(request):
 
 def editTask(request):
 	try:
-		task_id = request.POST['task_id']
-		edit_task_text = request.POST['task_text']
+		task_id = request.POST.get('task_id')
+		edit_task_text = request.POST.get('task_text')
+
+		print(task_id, edit_task_text)
 		task = Task.objects.get(pk = task_id)
-	except (KeyError, Task.DoesNotExist):
-		return JsonResponse({'status':'Fail'})
+	except Exception as e:
+		return JsonResponse({'status':e})
 	else:
 		task.task_text = edit_task_text
 		task.save()
-		return JsonResponse({'status':'Success'})
+		return redirect('tasks:index')
+
 
 def deleteTask(request):
 	try:
