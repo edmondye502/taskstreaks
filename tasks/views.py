@@ -21,7 +21,7 @@ class IndexView(generic.ListView):
 
 	def get_queryset(self):
 		task_type = self.getTaskType()
-		return Task.objects.filter(task_type=task_type, delete_flag=False).order_by('create_date')
+		return Task.objects.filter(task_type=task_type, delete_flag=False, user=self.request.user).order_by('create_date')
 
 
 class DetailView(generic.DetailView):
@@ -50,12 +50,16 @@ def addTask(request):
 		task_choices = {'Daily': Task.DAILY, 'Monthly': Task.MONTHLY, 'Yearly': Task.YEARLY, 'Once': Task.ONCE}
 		task_type = task_choices[request.POST.get('task_type')] if task_choices[request.POST.get('task_type')] else Task.ONCE
 		
-		task = Task(task_text=task_text, completed=task_completed, task_type=task_type)
+		task = Task(task_text=task_text, completed=task_completed, task_type=task_type, user=request.user)
 		task.save()
 
-		return redirect('tasks:index')
+		task_choices_redirect = {'Daily': 'day', 'Monthly': 'month', 'Yearly': 'year', 'Once': 'once'}
+		task_type_redirect = task_choices_redirect[request.POST.get('task_type')]
+
+		return redirect('/tasks/'+ task_type_redirect)
 	except Exception as e:
 		return JsonResponse({'status':e})
+
 
 def editTask(request):
 	try:

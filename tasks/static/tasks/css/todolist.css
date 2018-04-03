@@ -97,6 +97,27 @@ body{
     cursor: pointer;
 }
 
+
+.banner {
+    font-size: 12px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    padding: 10px;
+    background-color: #f0f0f5;
+
+}
+
+.banner_message {
+    display: inline;
+
+}
+.logout {
+    float: right;
+}
+
+
 .fa {
     cursor: pointer;
 }
